@@ -19,14 +19,16 @@ class MyApp extends StatelessWidget {
       ),
       home: Builder(builder: (context) {
         return Scaffold(
-          body: Column(children: [
-            TextButton(
-                onPressed: () => _onWebviewPressed(context),
-                child: const Text('WebviewScreen')),
-            TextButton(
-                onPressed: () => _onAdaptivePressed(context),
-                child: const Text('Adaptive')),
-          ]),
+          body: SafeArea(
+            child: Column(children: [
+              TextButton(
+                  onPressed: () => _onWebviewPressed(context),
+                  child: const Text('WebviewScreen')),
+              TextButton(
+                  onPressed: () => _onAdaptivePressed(context),
+                  child: const Text('Adaptive')),
+            ]),
+          ),
         );
       }),
     );

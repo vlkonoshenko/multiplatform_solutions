@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:multiplatform_solution/screens/widgets/grid_person_tile.dart';
+import 'package:multiplatform_solution/screens/widgets/list_person_tile.dart';
 
 class AdaptiveScreen extends StatefulWidget {
   const AdaptiveScreen({super.key});
@@ -9,32 +10,53 @@ class AdaptiveScreen extends StatefulWidget {
 }
 
 class _AdaptiveScreenState extends State<AdaptiveScreen> {
-  String _htmlText = '';
+  final _title = 'Adaptive Title';
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(_htmlText),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: loadHtmlPage,
-        tooltip: 'Increment',
-        child: const Icon(Icons.replay_outlined),
-      ),
-    );
-  }
-
-  Future<void> loadHtmlPage() async {
-    final result = await http.get(Uri.parse('https://flutter.dev'));
-    setState(() {
-      _htmlText = result.body;
+    return LayoutBuilder(builder: (context, constraints) {
+      if (constraints.maxWidth < 720) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(_title),
+          ),
+          body: ListView(
+            children: generateItems(120)
+                .map((index) => ListPersonTile(index: index))
+                .toList(),
+          ),
+        );
+      } else {
+        return Scaffold(
+          body: Row(
+            children: [
+              SizedBox(
+                width: 160,
+                child: Column(children: [
+                  Row(
+                    children: [const BackButton(), Text(_title)],
+                  )
+                ]),
+              ),
+              Expanded(
+                child: GridView(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      childAspectRatio: 1, crossAxisCount: 3),
+                  children: generateItems(120)
+                      .map((index) => GridPersonTile(index: index))
+                      .toList(),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
     });
+  }
+}
+
+Iterable<int> generateItems<T>(int count) sync* {
+  for (int index = 0; index < count; index++) {
+    yield index;
   }
 }
