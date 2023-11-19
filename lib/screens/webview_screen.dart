@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'adaptive_webview.dart'
-    if (dart.library.io) 'src/hw_io.dart' // dart:io implementation
-    if (dart.library.html) 'src/hw_html.dart';
+    if (dart.library.io) 'adaptive_webview.dart'
+    if (dart.library.html) 'widgets/platform_webview.dart';
 
 class WebviewScreen extends StatefulWidget {
   const WebviewScreen({super.key});
@@ -16,9 +16,9 @@ class WebviewScreen extends StatefulWidget {
 }
 
 class _WebviewScreenState extends State<WebviewScreen> {
-  late final WebViewController _webViewController;
+  late WebViewController _webViewController;
   final TextEditingController _urlController =
-      TextEditingController(text: 'https://flutter.dev2');
+      TextEditingController(text: 'https://flutter.dev');
 
   bool get _isMobile => kIsWeb ? false : Platform.isAndroid || Platform.isIOS;
 
@@ -26,22 +26,7 @@ class _WebviewScreenState extends State<WebviewScreen> {
   void initState() {
     super.initState();
 
-    if (_isMobile) {
-      _webViewController = WebViewController()
-        ..setJavaScriptMode(JavaScriptMode.unrestricted)
-        ..setBackgroundColor(const Color(0x00000000))
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onProgress: (int progress) {
-              // Update loading bar.
-            },
-            onPageStarted: (String url) {},
-            onPageFinished: (String url) {},
-            onWebResourceError: (WebResourceError error) {},
-          ),
-        )
-        ..loadRequest(Uri.parse(_urlController.text));
-    }
+    _loadingPage();
   }
 
   @override
@@ -59,9 +44,7 @@ class _WebviewScreenState extends State<WebviewScreen> {
           children: [
             Expanded(
                 child: _isMobile
-                    ? WebViewWidget(
-                        controller: _webViewController,
-                      )
+                    ? WebViewWidget(controller: _webViewController)
                     : webView(_urlController.text)),
             Row(
               children: [
@@ -72,7 +55,11 @@ class _WebviewScreenState extends State<WebviewScreen> {
                 )),
                 ElevatedButton(
                   onPressed: () {
-                    setState(() {});
+                    setState(() {
+                      if (_isMobile) {
+                        _loadingPage();
+                      }
+                    });
                   },
                   child: const Text('Load'),
                 ),
@@ -80,7 +67,24 @@ class _WebviewScreenState extends State<WebviewScreen> {
               ],
             ),
             Text(kIsWeb ? 'WEB' : Platform.operatingSystem),
+            SizedBox(height: MediaQuery.of(context).padding.bottom)
           ],
         ));
+  }
+
+  void _loadingPage() {
+    if (_isMobile) {
+      _webViewController = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(const Color(0x00000000))
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onPageStarted: (String url) {},
+            onPageFinished: (String url) {},
+            onWebResourceError: (WebResourceError error) {},
+          ),
+        )
+        ..loadRequest(Uri.parse(_urlController.text));
+    }
   }
 }
